@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1554d1">
+<title>द्वारकाधिश जमा बाकी बुक</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fc;font-family:Arial,sans-serif;color:#172033}
+.header{background:#1554d1;color:white;padding:24px 18px 28px;border-radius:0 0 28px 28px}
+.small{font-size:15px;margin-bottom:7px}h1{margin:0 0 18px;font-size:28px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{background:#ffffff1c;border:1px solid #ffffff35;border-radius:18px;padding:15px}.stat b{display:block;font-size:14px;margin-bottom:7px}.stat strong{font-size:24px}
+.container{max-width:760px;margin:auto;padding:18px 14px 90px}.search{width:100%;border:0;border-radius:18px;background:white;padding:17px;font-size:17px;box-shadow:0 4px 16px #0000000d;margin-bottom:14px;outline:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}button{border:0;border-radius:16px;padding:15px;font-size:17px;font-weight:700}.primary{background:#1554d1;color:white}.blue{background:#eaf1ff;color:#1554d1}
+.card{background:white;border-radius:20px;padding:17px;margin-top:14px;box-shadow:0 4px 16px #0000000b}.customer{display:flex;justify-content:space-between;gap:12px}.customer h3{margin:0 0 7px;font-size:19px}.muted{color:#687386;font-size:14px}
+.amounts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.amount{padding:11px;border-radius:12px;background:#f1f6ff}.amount b{display:block;font-size:13px;margin-bottom:4px}.amount strong{font-size:19px}
+.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1;padding:10px;font-size:14px}.green{background:#e7f8ef;color:#087443}.red{background:#fff0f0;color:#c62828}
+.empty{text-align:center;color:#687386;padding:35px 10px}.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;padding:9px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;z-index:5}.bottom button{background:white;color:#172033;padding:8px;font-size:14px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:10;padding:18px}.modalBox{background:white;border-radius:22px;max-width:520px;margin:40px auto 0;padding:20px}.modalBox h2{margin-top:0}label{display:block;font-weight:700;margin:12px 0 6px}input,select{width:100%;padding:13px;border:1px solid #ccd5e3;border-radius:12px;font-size:16px}.formActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}
+@media(max-width:420px){h1{font-size:25px}}
+</style>
+</head>
+<body>
+<header class="header"><div class="small">॥ श्री कृष्ण ॥</div><h1>द्वारकाधिश जमा बाकी बुक</h1>
+<div class="stats"><div class="stat"><b>एकूण जमा</b><strong id="totalJama">₹0</strong></div><div class="stat"><b>एकूण बाकी</b><strong id="totalBaki">₹0</strong></div></div></header>
+<main class="container">
+<input id="search" class="search" placeholder="🔎 ग्राहकाचे नाव / मोबाईल शोधा..." oninput="render()">
+<div class="grid"><button class="primary" onclick="openModal()">➕ नवीन व्यवहार</button><button class="blue" onclick="showAll()">📒 सर्व खाते</button></div>
+<div id="list"></div></main>
+<nav class="bottom"><button onclick="window.scrollTo({top:0,behavior:'smooth'})">🏠<br>होम</button><button onclick="openModal()">➕<br>जमा / बाकी</button><button onclick="showAll()">📋<br>खाते</button></nav>
+<div id="modal" class="modal"><div class="modalBox"><h2>नवीन व्यवहार</h2>
+<label>ग्राहकाचे नाव</label><input id="name" placeholder="उदा. रमेश पाटील">
+<label>मोबाईल नंबर</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 अंकी मोबाईल नंबर">
+<label>व्यवहाराचा प्रकार</label><select id="type"><option value="baki">बाकी दिली</option><option value="jama">जमा मिळाले</option></select>
+<label>रक्कम (₹)</label><input id="amount" type="number" min="0" step="1" placeholder="रक्कम">
+<label>तपशील</label><input id="note" placeholder="उदा. किराणा / पैसे जमा">
+<div class="formActions"><button class="red" onclick="closeModal()">रद्द करा</button><button class="primary" onclick="saveEntry()">सेव्ह करा</button></div>
+</div></div>
+<script>
+const KEY="dwarkadhish_jama_baki_v1";let data=JSON.parse(localStorage.getItem(KEY)||"[]");
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function openModal(){document.getElementById("modal").style.display="block";setTimeout(()=>document.getElementById("name").focus(),100)}
+function closeModal(){document.getElementById("modal").style.display="none";["name","mobile","amount","note"].forEach(id=>document.getElementById(id).value="");document.getElementById("type").value="baki"}
+function saveEntry(){const name=document.getElementById("name").value.trim(),mobile=document.getElementById("mobile").value.trim(),amount=Number(document.getElementById("amount").value),type=document.getElementById("type").value,note=document.getElementById("note").value.trim();if(!name){alert("ग्राहकाचे नाव टाका.");return}if(!amount||amount<0){alert("योग्य रक्कम टाका.");return}data.push({id:Date.now(),name,mobile,amount,type,note,date:new Date().toLocaleString("mr-IN")});save();closeModal()}
+function balanceFor(name,mobile){let jama=0,baki=0;data.filter(x=>x.name===name&&x.mobile===mobile).forEach(x=>x.type==="jama"?jama+=Number(x.amount):baki+=Number(x.amount));return{jama,baki,balance:baki-jama}}
+function render(){const q=document.getElementById("search").value.toLowerCase().trim(),tj=data.filter(x=>x.type==="jama").reduce((s,x)=>s+Number(x.amount),0),tb=data.filter(x=>x.type==="baki").reduce((s,x)=>s+Number(x.amount),0);document.getElementById("totalJama").textContent=money(tj);document.getElementById("totalBaki").textContent=money(tb);const groups=[],map={};data.forEach(x=>{const k=x.name+"|"+x.mobile;if(!map[k]){map[k]=[];groups.push(k)}map[k].push(x)});let html="";groups.reverse().forEach(k=>{const a=map[k],f=a[0];if(q&&!(f.name+" "+f.mobile).toLowerCase().includes(q))return;const b=balanceFor(f.name,f.mobile);html+=`<div class="card"><div class="customer"><div><h3>👤 ${esc(f.name)}</h3><div class="muted">${esc(f.mobile||"मोबाईल नंबर नाही")}</div></div><div class="muted">${a.length} व्यवहार</div></div><div class="amounts"><div class="amount"><b>💰 जमा</b><strong>${money(b.jama)}</strong></div><div class="amount"><b>💸 बाकी</b><strong>${money(b.baki)}</strong></div></div><div style="margin-top:12px;font-weight:700">शिल्लक: ${money(b.balance)}</div><div class="actions"><button class="green" onclick='addFor(${JSON.stringify(f.name)},${JSON.stringify(f.mobile)})'>➕ जमा</button><button class="blue" onclick='details(${JSON.stringify(f.name)},${JSON.stringify(f.mobile)})'>📋 व्यवहार</button><button class="red" onclick='deleteCustomer(${JSON.stringify(f.name)},${JSON.stringify(f.mobile)})'>🗑️ हटवा</button></div></div>`});document.getElementById("list").innerHTML=html||'<div class="card empty">अजून कोणताही व्यवहार नाही.<br><br>➕ नवीन व्यवहार बटन दाबून सुरुवात करा.</div>'}
+function addFor(n,m){openModal();document.getElementById("name").value=n;document.getElementById("mobile").value=m;document.getElementById("type").value="jama"}
+function details(n,m){const a=data.filter(x=>x.name===n&&x.mobile===m);let t="👤 "+n+"\n\n";a.forEach(x=>t+=(x.type==="jama"?"💰 जमा ":"💸 बाकी ")+money(x.amount)+" — "+(x.note||"")+"\n"+x.date+"\n\n");alert(t)}
+function deleteCustomer(n,m){if(confirm(n+" यांचे सर्व व्यवहार हटवायचे आहेत का?")){data=data.filter(x=>!(x.name===n&&x.mobile===m));save()}}
+function showAll(){document.getElementById("search").value="";render();window.scrollTo({top:0,behavior:"smooth"})}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+render();
+</script>
+</body>
+</html>
