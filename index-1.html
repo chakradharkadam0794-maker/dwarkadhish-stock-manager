@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#174fd1">
+<link rel="manifest" href="manifest.json">
+<title>द्वारकाधिश स्टॉक मॅनेजर</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef3fb;font-family:Arial,sans-serif;color:#172033}
+.app{max-width:480px;margin:auto;min-height:100vh;background:#f7f9fd;padding-bottom:78px}
+.hero{height:145px;background:linear-gradient(135deg,#174fd1,#4f7ff0)}
+.brand{background:#174fd1;color:#fff;padding:10px 20px 18px;border-radius:0 0 24px 24px}
+.brand h1{margin:3px 0;font-size:24px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.mini{background:#ffffff18;border:1px solid #ffffff25;border-radius:14px;padding:12px}
+.mini b{font-size:22px;display:block;margin-top:4px}
+main{padding:15px}
+.search{background:#fff;border-radius:14px;padding:13px;box-shadow:0 3px 12px #0001;margin-bottom:15px}
+.search input{border:0;outline:0;width:88%;font-size:16px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+button{border:0;border-radius:16px;padding:15px;font-size:15px;background:#fff;box-shadow:0 3px 12px #0001;color:#172033}
+button:active{transform:scale(.98)}
+.stock{background:#fff;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 3px 12px #0001}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stock h3{margin:0 0 7px}
+.pill{padding:6px 9px;border-radius:18px;background:#e8f7ed;color:#18854b;font-size:12px}
+.low{background:#fff0f0;color:#d22}
+.jama{background:#e9f1ff;color:#174fd1}
+.baki{background:#fff1f1;color:#c62828}
+.jamaBox{margin-top:12px;background:#eef5ff;border-radius:13px;padding:12px}
+.empty{text-align:center;color:#687386;padding:28px 10px}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:70px;background:#fff;display:grid;grid-template-columns:repeat(5,1fr);box-shadow:0 -3px 12px #0001;z-index:5}
+.nav{background:#fff;box-shadow:none;border-radius:0;font-size:10px;padding:5px}
+.nav span{display:block;font-size:19px;margin-bottom:2px}
+.primary{background:#174fd1;color:#fff}
+.jamaBtn{background:#e9f1ff;color:#174fd1}
+.reportBtn{background:#fff3df;color:#9a5a00}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:10;padding:18px;overflow:auto}
+.modalBox{background:#fff;border-radius:22px;max-width:480px;margin:30px auto;padding:20px}
+.modalHead{display:flex;justify-content:space-between;align-items:center}
+.modalHead h2{margin:0}
+.close{width:40px;height:40px;padding:0;background:#eee;border-radius:50%}
+label{display:block;font-weight:700;margin:13px 0 6px}
+.modal input,.modal select{width:100%;padding:13px;border:1px solid #ccd5e3;border-radius:12px;font-size:16px}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+@media(max-width:420px){.brand h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero"></div>
+
+  <div class="brand">
+    <small>॥ श्री कृष्ण ॥</small>
+    <h1>द्वारकाधिश स्टॉक मॅनेजर</h1>
+    <div class="summary">
+      <div class="mini">एकूण वस्तू<b id="items">0</b></div>
+      <div class="mini">एकूण नग<b id="qty">0</b></div>
+    </div>
+  </div>
+
+  <main>
+    <div class="search">🔍 <input id="q" oninput="render()" placeholder="वस्तूचे नाव शोधा..."></div>
+
+    <div class="actions">
+      <button onclick="addItem()">📥<br><b>माल जमा करा</b></button>
+      <button onclick="reduceItem()">📤<br><b>माल कमी करा</b></button>
+      <button onclick="openJamaBaki()" class="jamaBtn">💰<br><b>जमा बाकी बुक</b></button>
+      <button onclick="showReport()" class="reportBtn">📊<br><b>स्टॉक रिपोर्ट</b></button>
+    </div>
+
+    <h2>📦 तुमचा Stock</h2>
+    <div id="list"></div>
+  </main>
+
+  <nav class="bottom">
+    <button class="nav" onclick="window.scrollTo({top:0,behavior:'smooth'})">🏠<span>होम</span></button>
+    <button class="nav" onclick="focusSearch()">📦<span>स्टॉक</span></button>
+    <button class="nav" onclick="addItem()">➕<span>जमा</span></button>
+    <button class="nav" onclick="openJamaBaki()">💰<span>जमा बाकी</span></button>
+    <button class="nav" onclick="showReport()">📊<span>रिपोर्ट</span></button>
+  </nav>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modalBox">
+    <div class="modalHead">
+      <h2 id="modalTitle">नवीन वस्तू</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+    <label>वस्तूचे नाव</label>
+    <input id="mName" placeholder="उदा. साखर">
+    <label>नग / प्रमाण</label>
+    <input id="mQty" type="number" min="1" step="1" placeholder="उदा. 10">
+    <div class="formGrid">
+      <button class="primary" onclick="saveModal()">💾 सेव्ह करा</button>
+      <button onclick="closeModal()">रद्द करा</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let d=JSON.parse(localStorage.getItem('dw_stock')||'[]');
+let mode='add';
+
+function save(){
+  localStorage.setItem('dw_stock',JSON.stringify(d));
+  render();
+}
+
+function openJamaBaki(){
+  window.location.href='jama-baki.html';
+}
+
+function focusSearch(){
+  document.getElementById('q').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addItem(){
+  mode='add';
+  document.getElementById('modalTitle').textContent='माल जमा करा';
+  document.getElementById('mName').value='';
+  document.getElementById('mQty').value='';
+  document.getElementById('modal').style.display='block';
+  setTimeout(()=>document.getElementById('mName').focus(),100);
+}
+
+function reduceItem(){
+  mode='reduce';
+  document.getElementById('modalTitle').textContent='माल कमी करा';
+  document.getElementById('mName').value='';
+  document.getElementById('mQty').value='';
+  document.getElementById('modal').style.display='block';
+  setTimeout(()=>document.getElementById('mName').focus(),100);
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display='none';
+}
+
+function saveModal(){
+  const n=document.getElementById('mName').value.trim();
+  const q=Number(document.getElementById('mQty').value);
+  if(!n){alert('वस्तूचे नाव टाका.');return}
+  if(!q || q<1){alert('योग्य नग / प्रमाण टाका.');return}
+
+  let x=d.find(a=>a.name.toLowerCase()===n.toLowerCase());
+
+  if(mode==='add'){
+    if(x)x.qty+=q;
+    else d.push({name:n,qty:q});
+  }else{
+    if(!x){alert('ही वस्तू स्टॉकमध्ये नाही.');return}
+    if(q>x.qty){alert('उपलब्ध स्टॉकपेक्षा जास्त माल कमी करता येणार नाही.');return}
+    x.qty-=q;
+    if(x.qty===0)d=d.filter(a=>a!==x);
+  }
+  save();
+  closeModal();
+}
+
+function render(){
+  const q=document.getElementById('q').value.toLowerCase().trim();
+  const filtered=d.filter(x=>x.name.toLowerCase().includes(q));
+  document.getElementById('items').textContent=d.length;
+  document.getElementById('qty').textContent=d.reduce((s,x)=>s+Number(x.qty),0);
+
+  if(!filtered.length){
+    document.getElementById('list').innerHTML='<div class="stock empty">📦 स्टॉकमध्ये वस्तू नाही.<br><br>“माल जमा करा” बटन दाबून सुरुवात करा.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML=filtered.map((x,i)=>{
+    const low=Number(x.qty)<=5;
+    return `<div class="stock">
+      <div class="row">
+        <div>
+          <h3>📦 ${esc(x.name)}</h3>
+          <span class="pill ${low?'low':''}">${low?'स्टॉक कमी':'स्टॉक उपलब्ध'}</span>
+        </div>
+        <strong style="font-size:24px">${Number(x.qty)}</strong>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="jama" onclick="quickAdd(${i})">➕ जमा</button>
+        <button class="baki" onclick="quickReduce(${i})">➖ कमी</button>
+        <button onclick="deleteItem(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function quickAdd(i){
+  const q=Number(prompt(d[i].name+' मध्ये किती नग जमा करायचे?', '1'));
+  if(!q||q<1)return;
+  d[i].qty+=q;save();
+}
+
+function quickReduce(i){
+  const q=Number(prompt(d[i].name+' मधून किती नग कमी करायचे?', '1'));
+  if(!q||q<1)return;
+  if(q>d[i].qty){alert('उपलब्ध स्टॉकपेक्षा जास्त नग नाही.');return}
+  d[i].qty-=q;
+  if(d[i].qty===0)d.splice(i,1);
+  save();
+}
+
+function deleteItem(i){
+  if(confirm(d[i].name+' हटवायचे आहे का?')){
+    d.splice(i,1);save();
+  }
+}
+
+function showReport(){
+  const total=d.reduce((s,x)=>s+Number(x.qty),0);
+  alert('📊 स्टॉक रिपोर्ट\\n\\nएकूण वस्तू: '+d.length+'\\nएकूण नग: '+total);
+}
+
+function esc(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[m]));
+}
+
+render();
+</script>
+</body>
+</html>
