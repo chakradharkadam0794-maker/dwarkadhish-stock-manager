@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="mr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>जमा बाकी नोंद</title><style>
+body{font-family:Arial;margin:0;background:#f3f6fb;color:#172033}header{background:#1565c0;color:white;padding:20px;text-align:center}.card{background:white;margin:20px;padding:20px;border-radius:18px}input{width:100%;box-sizing:border-box;padding:15px;margin:8px 0;border:1px solid #ccc;border-radius:10px;font-size:18px}button,a{display:block;width:100%;box-sizing:border-box;padding:15px;margin-top:12px;border:0;border-radius:10px;background:#1565c0;color:white;text-align:center;text-decoration:none;font-size:18px}
+</style></head><body><header><h1>📒 जमा बाकी नोंद</h1></header><div class="card">
+<input id="name" placeholder="ग्राहकाचे नाव"><input id="amount" type="number" placeholder="रक्कम">
+<button onclick="save()">जमा/बाकी नोंदवा</button><a href="index.html">← मुख्य पेजवर जा</a><div id="list"></div></div>
+<script>
+let data=JSON.parse(localStorage.getItem('jamaBaki')||'[]');
+function render(){document.getElementById('list').innerHTML=data.map(x=>`<p><b>${x.name}</b> — ₹${x.amount}</p>`).join('')}
+function save(){let n=document.getElementById('name').value.trim(),a=document.getElementById('amount').value;if(!n||!a)return;data.push({name:n,amount:a});localStorage.setItem('jamaBaki',JSON.stringify(data));document.getElementById('name').value='';document.getElementById('amount').value='';render()}render();
+</script></body></html>
